@@ -4,6 +4,7 @@
 
 (def separator "/")
 (def home-dir ["Users", "joel.carlbark"])
+(def built-in-commands ["cd", "pwd", "ls", "clear", "quit"])
 
 (defn to-fs [path]
   (clojure.string/join separator (concat [""] path)))
@@ -55,6 +56,9 @@
 (defn- tokens [input]
   (clojure.string/split input #" "))
 
+(defn built-in? [cmdtoks]
+  (not (nil? (some #{(first cmdtoks)} built-in-commands))))
+
 (defn- lispify [tokens]
   (let [base (str "(" (first tokens))]
     (if (empty? (rest tokens))
@@ -63,7 +67,7 @@
 
 (defn quit []
   (do
-    (println "Bye!")
+    (println "Bye for now!")
     (System/exit 0)))
 
 (defn- prompt []
@@ -78,7 +82,7 @@
     (do
       ;(println lisp-inp)
       (binding [*ns* (find-ns 'morla.core)]
-        (println (load-string lisp-inp)))
+        (println (load-string (if (built-in? toks) lisp-inp inp))))
       (recur))))
 
 (defn -main

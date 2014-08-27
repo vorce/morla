@@ -15,8 +15,7 @@ morla is a clojure shell prototype. It is very rough and unfinished.
 - ls
 
 You can also run some clojure stuff, which is the point of morla. Ex:
-`println hello`
-First and last parens are automatically added.
+`"hello"`, `(+ 1 4)`, etc
 
 ## License
 
