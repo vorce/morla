@@ -1,10 +1,12 @@
 (ns morla.core
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [environ.core :refer [env]]
+            [clojure.java.shell :as shell])
   (:gen-class :main true))
 
 (def separator "/")
 (def home-dir ["Users", "joel.carlbark"])
-(def built-in-commands ["cd", "pwd", "ls", "clear", "quit"])
+(def built-in-commands ["cd", "pwd", "ls", "quit"])
 
 (defn to-fs [path]
   (clojure.string/join separator (concat [""] path)))
@@ -59,11 +61,14 @@
 (defn built-in? [cmdtoks]
   (not (nil? (some #{(first cmdtoks)} built-in-commands))))
 
-(defn- lispify [tokens]
+(defn- clojurify [tokens]
   (let [base (str "(" (first tokens))]
     (if (empty? (rest tokens))
       (str base ")")
       (str base " \"" (clojure.string/join " " (rest tokens)) "\")"))))
+
+(defn- clojure? [toks]
+  (= \( (first (first toks))))
 
 (defn quit []
   (do
@@ -75,14 +80,28 @@
     (print (str (pwd) " λ "))
     (read-line)))
 
+(defn path? [token]
+  (and (-> token (count) (> 1)) (.contains token "/")))
+
+(defn absolutify [toks]
+  (for [t toks] (if (path? t) (str (pwd) "/" t) t)))
+
+(defn command [[cmd & args]]
+  (str (apply shell/sh (cons cmd (absolutify args)))))
+
 (defn- repl []
   (let [inp (read-line)
         toks (tokens inp)
-        lisp-inp (lispify toks)]
+        lisp-inp (clojurify toks)]
     (do
       ;(println lisp-inp)
-      (binding [*ns* (find-ns 'morla.core)]
-        (println (load-string (if (built-in? toks) lisp-inp inp))))
+      (try
+        (binding [*ns* (find-ns 'morla.core)]
+          (println (load-string (cond
+                                  (built-in? toks) lisp-inp
+                                  (not (clojure? toks)) (command toks)
+                                  :else inp))))
+        (catch Exception e (println (.getMessage e))))
       (recur))))
 
 (defn -main

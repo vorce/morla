@@ -4,4 +4,5 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :main morla.core
-  :dependencies [[org.clojure/clojure "1.5.1"]])
+  :dependencies [[org.clojure/clojure "1.5.1"]
+                 [environ "1.0.0"]])
