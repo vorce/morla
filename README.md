@@ -2,6 +2,8 @@
 
 morla is a clojure shell prototype. It is very rough and unfinished.
 
+Update: I think what I really want already exist, ie https://github.com/dundalek/closh or https://github.com/borkdude/babashka
+
 ## Usage
 
     lein uberjar
